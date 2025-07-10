@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor Autodesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./main.css" />
+</head>
+<body>
+    <!-- Visor 3D -->
+    <div id="viewerContainer"></div>
+
+    <!-- Menú lateral izquierdo -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="./logo.png" height="50px" alt="Cuaternion" />
+        </div>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-layer'></i>
+            <span>Panell</span>
+        </a>
+        
+        <a href="models.html" class="sidebar-item">
+            <i class='bx bx-cube'></i>
+            <span>Models</span>
+        </a>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-map'></i>
+            <span>Mapes</span>
+        </a>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-user'></i>
+            <span>El meu perfil</span>
+        </a>
+        
+        <a href="index.html" class="sidebar-item active">
+            <i class='bx bx-desktop'></i>
+            <span>Visor 3D</span>
+        </a>
+
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-desktop'></i>
+            <span>P&ID</span>
+        </a>
+    </div>
+
+    <!-- Panel desplegable -->
+    <div class="collapsible-panel" id="collapsiblePanel">
+        <div class="panel-content">
+            <div class="cards-container">
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-card-header">CORRECTIVOS EN CURSO</div>
+                    <div class="status-content">
+                        <div class="status-icon info">
+                            <i class='bx bx-check'></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <button class="toggle-button" onclick="togglePanel()">
+            <i class='bx bx-chevron-up' id="toggleIcon"></i>
+        </button>
+    </div>
+
+
+    <div id="overlay" style="display:none;">
+        <div class="notification">
+        <button id="closeOverlay" aria-label="Cerrar overlay" 
+        style="position:absolute; top:10px; right:15px; border:none; background:none; font-size:1.5em; cursor:pointer;">×</button>
+      <div id="notificationContent"></div>
+        </div>
+    </div>
+
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="./main.js"></script>
+    <script type="module" src="./viewer.js"></script>
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('collapsiblePanel');
+            const icon = document.getElementById('toggleIcon');
+            
+            panel.classList.toggle('collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                icon.className = 'bx bx-chevron-down';
+            } else {
+                icon.className = 'bx bx-chevron-up';
+            }
+        }
+
+        // Funcionalidad del menú lateral
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+            // Solo prevenir el comportamiento si el enlace no tiene href real
+            const href = this.getAttribute('href');
+            if (href === '#') {
+                e.preventDefault();
+            }
+
+            // Remover clase active de todos los items
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            // Añadir clase active al item clickeado
+            this.classList.add('active');
+        });
+    });
+
+    </script>
+</body>
+</html>

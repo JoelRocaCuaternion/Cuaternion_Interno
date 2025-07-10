@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor Autodesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./main.css" />
+</head>
+<body>
+
+    <!-- Menú lateral izquierdo -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="./logo.png" height="50px" alt="Cuaternion" />
+        </div>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-layer'></i>
+            <span>Panell</span>
+        </a>
+        
+        <a href="models.html" class="sidebar-item active">
+            <i class='bx bx-cube'></i>
+            <span>Models</span>
+        </a>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-map'></i>
+            <span>Mapes</span>
+        </a>
+        
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-user'></i>
+            <span>El meu perfil</span>
+        </a>
+        
+        <a href="index.html" class="sidebar-item">
+            <i class='bx bx-desktop'></i>
+            <span>Visor 3D</span>
+        </a>
+
+        <a href="#" class="sidebar-item">
+            <i class='bx bx-desktop'></i>
+            <span>P&ID</span>
+        </a>
+    </div>
+
+     <div class="main-container">
+        <!-- Área de contenido -->
+        <div class="content-area">
+            <!-- Tarjetas de estadísticas -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-header">EVOLUCIÓ</div>
+                    <div class="stat-value">350,897</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        3.48% Des del mes passat
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class='bx bx-bar-chart-alt-2'></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">CORRECTIU</div>
+                    <div class="stat-value">2,356</div>
+                    <div class="stat-change negative">
+                        <i class='bx bx-down-arrow-alt'></i>
+                        3.48% Des de la setmana passada
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class='bx bx-error-circle'></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">ORDRES</div>
+                    <div class="stat-value">924</div>
+                    <div class="stat-change negative">
+                        <i class='bx bx-down-arrow-alt'></i>
+                        1.10% Des d'ahir
+                    </div>
+                    <div class="stat-icon green">
+                        <i class='bx bx-user-check'></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">ESTAT</div>
+                    <div class="stat-value">49,65%</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        12% Des del mes passat
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class='bx bx-percentage'></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabla de modelos -->
+            
+            <div class="models-section">
+            <div class="models-header">Models</div>
+            <table class="models-table">
+                <thead>
+                    <tr>
+                        <th>NOM</th>
+                        <th>FITXER HUB</th>
+                        <th>MIDA</th>
+                        <th>INCIDÈNCIES</th>
+                        <th>PRESSUPOST</th>
+                        <th>SEGUENT ACTUACIÓ</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Los modelos se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+
+    <div id="overlay" style="display:none;">
+    <div class="notification">
+      <button id="closeOverlay" aria-label="Cerrar overlay" 
+        style="position:absolute; top:10px; right:15px; border:none; background:none; font-size:1.5em; cursor:pointer;">×</button>
+      <div id="notificationContent"></div>
+    </div>
+  </div>
+
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="./main.js"></script>
+    <script type="module" src="./viewer.js"></script>
+
+    <script>
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+            // Solo prevenir el comportamiento si el enlace no tiene href real
+            const href = this.getAttribute('href');
+            if (href === '#') {
+                e.preventDefault();
+            }
+
+            // Remover clase active de todos los items
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            // Añadir clase active al item clickeado
+            this.classList.add('active');
+        });
+    });
+    </script>
+</body>
+</html>
