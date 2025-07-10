@@ -20,7 +20,6 @@ body {
     #preview {
         width: 100%;
         height: 100%;
-        background: #2c3e50;
     }
 
     /* Asegurar que el viewer de Forge ocupe todo el espacio */

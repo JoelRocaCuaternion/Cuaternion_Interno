@@ -83,6 +83,40 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// Main.js
+
+// Función para detectar el tipo de modelo basado en la extensión del archivo
+function detectModelType(fileName) {
+    const lowerFileName = fileName.toLowerCase();
+    
+    // Detectar modelos P&ID (2D)
+    if (lowerFileName.includes('pid') || 
+        lowerFileName.includes('p&id') || 
+        lowerFileName.endsWith('.dwg') || 
+        lowerFileName.endsWith('.dwf') ||
+        lowerFileName.endsWith('.dxf') || 
+        lowerFileName.includes('2d') ||
+        lowerFileName.includes('plano') ||
+        lowerFileName.includes('esquema')) {
+        return '2d';
+    }
+    
+    // Detectar modelos 3D
+    if (lowerFileName.endsWith('.nwd') || 
+        lowerFileName.endsWith('.nwc') || 
+        lowerFileName.endsWith('.rvt') || 
+        lowerFileName.endsWith('.ifc') || 
+        lowerFileName.endsWith('.3dm') ||
+        lowerFileName.endsWith('.step') ||
+        lowerFileName.endsWith('.stp') ||
+        lowerFileName.includes('3d')) {
+        return '3d';
+    }
+    
+    // Por defecto, asumir 3D
+    return '3d';
+}
+
 // Función para cargar modelos desde la API
 async function loadModels() {
     if (!window.location.pathname.includes('models.html')) {
@@ -122,20 +156,18 @@ async function loadModels() {
             const row = document.createElement('tr');
             const modelName = model.name || '';
             const fileName = model.fileName || 'Sin nombre';
-            const size = model.size || 0;
-            const incidents = model.incidents || 0;
-            const budget = model.budget || 0;
-            const nextAction = model.nextAction || '';
+            const modelType = model.type || detectModelType(fileName);
             
             row.innerHTML = `
                 <td>${modelName}</td>
                 <td>${fileName}</td>
-                <td>${formatFileSize(size)}</td>
-                <td>${incidents}</td>
-                <td>${budget.toFixed(2)} €</td>
-                <td>${nextAction}</td>
                 <td>
-                    <button class="action-btn" onclick="openModel('${model.urn}', '${model.name || fileName}')">
+                    <span class="model-type-badge ${modelType === '2d' ? 'type-2d' : 'type-3d'}">
+                        ${modelType === '2d' ? 'P&ID' : '3D'}
+                    </span>
+                </td>
+                <td>
+                    <button class="action-btn" onclick="openModel('${model.urn}', '${fileName}')">
                         Abrir
                     </button>
                 </td>
@@ -174,25 +206,34 @@ function openModel(urn, fileName) {
     
     console.log('Abriendo modelo:', { urn, fileName });
     
-    // Usar el hash de la URL para pasar el URN
-    window.location.href = `index.html#${urn}`;
+    // Detectar el tipo de modelo basado en el nombre del archivo
+    const modelType = detectModelType(fileName);
+    
+    // Redirigir según el tipo de modelo
+    if (modelType === '2d') {
+        console.log('Modelo 2D detectado, redirigiendo a pid.html');
+        window.location.href = `pid.html#${urn}`;
+    } else {
+        console.log('Modelo 3D detectado, redirigiendo a index.html');
+        window.location.href = `index.html#${urn}`;
+    }
 }
 
-// Función para inicializar el visor
+// Función para inicializar el visor 3D (index.html)
 async function initializeViewer() {
     // Verificar si estamos en la página del visor
     if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
         return;
     }
 
-    const previewContainer = document.getElementById('preview') || document.getElementById('viewerContainer');
+    const previewContainer = document.getElementById('preview');
     if (!previewContainer) {
         console.error('Contenedor de preview no encontrado');
         return;
     }
 
     try {
-        console.log('Inicializando visor...');
+        console.log('Inicializando visor 3D...');
         const viewer = await initViewer(previewContainer);
         const urn = window.location.hash?.substring(1);
         
@@ -202,13 +243,61 @@ async function initializeViewer() {
             await loadDefaultModel();
         } else {
             console.log('URN encontrada en URL:', urn);
-            // Cargar modelo específico
+            // Cargar modelo específico - CORREGIDO: era loadModels(urn)
             await loadModel(urn);
         }
         
     } catch (error) {
         console.error('Error inicializando visor:', error);
         showMessage('Error al inicializar el visor: ' + error.message, 'error');
+    }
+}
+
+// Función para inicializar el visor P&ID (pid.html)
+async function initializePIDViewer() {
+    // Verificar si estamos en la página del visor P&ID
+    if (!window.location.pathname.includes('pid.html')) {
+        return;
+    }
+
+    const previewContainer = document.getElementById('preview2D');
+    if (!previewContainer) {
+        console.error('Contenedor de preview2D no encontrado');
+        return;
+    }
+
+    try {
+        console.log('Inicializando visor P&ID...');
+        const viewer = await initViewer(previewContainer);
+        const urn = window.location.hash?.substring(1);
+        
+        if (!urn) {
+            console.log('No hay URN en la URL, cargando modelo 2D predeterminado...');
+            // Cargar modelo 2D predeterminado
+            await loadDefault2DModel();
+        } else {
+            console.log('URN encontrada en URL:', urn);
+            // Cargar modelo específico
+            await loadModel(urn);
+        }
+        
+    } catch (error) {
+        console.error('Error inicializando visor P&ID:', error);
+        showMessage('Error al inicializar el visor P&ID: ' + error.message, 'error');
+    }
+}
+
+// Función para cargar modelo 2D predeterminado
+async function loadDefault2DModel() {
+    try {
+        const response = await fetch('/api/models/default2d');
+        if (!response.ok) {
+            throw new Error('No se pudo obtener el modelo 2D predeterminado');
+        }
+        const model = await response.json();
+        await loadModel(model.urn);
+    } catch (error) {
+        console.error('Error cargando modelo 2D predeterminado:', error);
     }
 }
 
@@ -222,8 +311,11 @@ function initializePage() {
         console.log('Inicializando página de modelos...');
         loadModels();
     } else if (currentPath.includes('index.html') || currentPath === '/') {
-        console.log('Inicializando página del visor...');
+        console.log('Inicializando página del visor 3D...');
         initializeViewer();
+    } else if (currentPath.includes('pid.html')) {
+        console.log('Inicializando página del visor P&ID...');
+        initializePIDViewer();
     }
 }
 
@@ -233,6 +325,7 @@ document.addEventListener('DOMContentLoaded', initializePage);
 // Exponer funciones globalmente para uso en HTML
 window.loadModels = loadModels;
 window.openModel = openModel;
+window.detectModelType = detectModelType;
 window.showMessage = showMessage;
 window.showConfirmDialog = showConfirmDialog;
 window.clearNotification = clearNotification;
