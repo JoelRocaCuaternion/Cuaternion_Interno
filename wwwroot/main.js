@@ -83,7 +83,6 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Main.js
 
 // Función para detectar el tipo de modelo basado en la extensión del archivo
 function detectModelType(fileName) {
@@ -131,7 +130,9 @@ async function loadModels() {
     }
     
     try {
-        showMessage('Cargando modelos desde Autodesk Forge...', 'info');
+        if (typeof showMessage === 'function') {
+            showMessage('Cargando modelos desde Autodesk Forge...', 'info');
+        }
         
         const response = await fetch('/api/models');
         
@@ -141,7 +142,9 @@ async function loadModels() {
         
         const models = await response.json();
         
-        clearNotification();
+        if (typeof clearNotification === 'function') {
+            clearNotification();
+        }
         
         // Limpiar tabla
         tbody.innerHTML = '';
@@ -175,11 +178,15 @@ async function loadModels() {
             tbody.appendChild(row);
         });
         
-        showMessage(`${models.length} modelos cargados correctamente desde Autodesk Forge`, 'success', 3000);
+        if (typeof showMessage === 'function') {
+            showMessage(`${models.length} modelos cargados correctamente desde Autodesk Forge`, 'success', 3000);
+        }
         
     } catch (error) {
         console.error('Error cargando modelos:', error);
-        showMessage('Error al cargar los modelos desde Autodesk Forge: ' + error.message, 'error');
+        if (typeof showMessage === 'function') {
+            showMessage('Error al cargar los modelos desde Autodesk Forge: ' + error.message, 'error');
+        }
         
         // Mostrar mensaje de ayuda para debugging
         const tbody = document.querySelector('.models-table tbody');
@@ -200,7 +207,9 @@ async function loadModels() {
 // Función para abrir modelo en el visor
 function openModel(urn, fileName) {
     if (!urn) {
-        showMessage('URN del modelo no válido', 'error');
+        if (typeof showMessage === 'function') {
+            showMessage('URN del modelo no válido', 'error');
+        }
         return;
     }
     
@@ -219,86 +228,13 @@ function openModel(urn, fileName) {
     }
 }
 
-// Función para inicializar el visor 3D (index.html)
-async function initializeViewer() {
-    // Verificar si estamos en la página del visor
-    if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
-        return;
-    }
-
-    const previewContainer = document.getElementById('preview');
-    if (!previewContainer) {
-        console.error('Contenedor de preview no encontrado');
-        return;
-    }
-
-    try {
-        console.log('Inicializando visor 3D...');
-        const viewer = await initViewer(previewContainer);
-        const urn = window.location.hash?.substring(1);
-        
-        if (!urn) {
-            console.log('No hay URN en la URL, cargando modelo predeterminado...');
-            // Cargar modelo predeterminado
-            await loadDefaultModel();
-        } else {
-            console.log('URN encontrada en URL:', urn);
-            // Cargar modelo específico - CORREGIDO: era loadModels(urn)
-            await loadModel(urn);
-        }
-        
-    } catch (error) {
-        console.error('Error inicializando visor:', error);
-        showMessage('Error al inicializar el visor: ' + error.message, 'error');
-    }
-}
-
-// Función para inicializar el visor P&ID (pid.html)
-async function initializePIDViewer() {
-    // Verificar si estamos en la página del visor P&ID
-    if (!window.location.pathname.includes('pid.html')) {
-        return;
-    }
-
-    const previewContainer = document.getElementById('preview2D');
-    if (!previewContainer) {
-        console.error('Contenedor de preview2D no encontrado');
-        return;
-    }
-
-    try {
-        console.log('Inicializando visor P&ID...');
-        const viewer = await initViewer(previewContainer);
-        const urn = window.location.hash?.substring(1);
-        
-        if (!urn) {
-            console.log('No hay URN en la URL, cargando modelo 2D predeterminado...');
-            // Cargar modelo 2D predeterminado
-            await loadDefault2DModel();
-        } else {
-            console.log('URN encontrada en URL:', urn);
-            // Cargar modelo específico
-            await loadModel(urn);
-        }
-        
-    } catch (error) {
-        console.error('Error inicializando visor P&ID:', error);
-        showMessage('Error al inicializar el visor P&ID: ' + error.message, 'error');
-    }
-}
-
-// Función para cargar modelo 2D predeterminado
-async function loadDefault2DModel() {
-    try {
-        const response = await fetch('/api/models/default2d');
-        if (!response.ok) {
-            throw new Error('No se pudo obtener el modelo 2D predeterminado');
-        }
-        const model = await response.json();
-        await loadModel(model.urn);
-    } catch (error) {
-        console.error('Error cargando modelo 2D predeterminado:', error);
-    }
+// Función para abrir modelos en el visor dual
+function openDualModel(urn3D, urn2D) {
+    const params = new URLSearchParams();
+    if (urn3D) params.set('urn3d', urn3D);
+    if (urn2D) params.set('urn2d', urn2D);
+    
+    window.location.href = `dual.html?${params.toString()}`;
 }
 
 // Función de inicialización cuando se carga la página
@@ -307,18 +243,60 @@ function initializePage() {
     
     console.log('Inicializando página:', currentPath);
     
+    // Limpiar viewers anteriores si existen
+    if (typeof cleanupViewers === 'function') {
+        cleanupViewers();
+    }
+    
     if (currentPath.includes('models.html')) {
         console.log('Inicializando página de modelos...');
         loadModels();
+    } else if (currentPath.includes('dual.html')) {
+        console.log('Inicializando página del visor dual...');
+        document.body.classList.add('dual-viewer');
+        // Esperar un poco para asegurar que el DOM esté listo
+        setTimeout(() => {
+            if (typeof initializeDualViewer === 'function') {
+                initializeDualViewer();
+            }
+        }, 100);
     } else if (currentPath.includes('index.html') || currentPath === '/') {
         console.log('Inicializando página del visor 3D...');
-        initializeViewer();
+        document.body.classList.add('single-viewer');
+        // Esperar un poco para asegurar que el DOM esté listo
+        setTimeout(() => {
+            if (typeof initializeViewer === 'function') {
+                initializeViewer();
+            }
+        }, 100);
     } else if (currentPath.includes('pid.html')) {
         console.log('Inicializando página del visor P&ID...');
-        initializePIDViewer();
+        document.body.classList.add('single-viewer');
+        // Esperar un poco para asegurar que el DOM esté listo
+        setTimeout(() => {
+            if (typeof initializePIDViewer === 'function') {
+                initializePIDViewer();
+            }
+        }, 100);
     }
 }
 
+// Event listeners
+document.addEventListener('DOMContentLoaded', initializePage);
+
+// Limpiar viewers al salir de la página
+window.addEventListener('beforeunload', function() {
+    if (typeof cleanupViewers === 'function') {
+        cleanupViewers();
+    }
+});
+
+// Exponer funciones globalmente para uso en HTML
+window.loadModels = loadModels;
+window.openModel = openModel;
+window.openDualModel = openDualModel;
+window.detectModelType = detectModelType;
+window.initializePage = initializePage;
 // Event listeners
 document.addEventListener('DOMContentLoaded', initializePage);
 

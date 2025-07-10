@@ -14,9 +14,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
 <body>
-    <!-- Visor 3D -->
-    <div class="viewer" id="viewerContainer">
-        <div id="preview2D"></div>
+    <!-- Contenedor del visor dual -->
+    <div class="viewer dual-viewer-container" id="viewerContainer">
+        <!-- Visor 3D (Izquierda) -->
+        <div class="viewer-half">
+            <div id="preview" class="viewer-3d"></div>
+        </div>
+        
+        <!-- Visor 2D/P&ID (Derecha) -->
+        <div class="viewer-half">
+            <div id="preview2D" class="viewer-2d"></div>
+        </div>
     </div>
 
     <!-- Menú lateral izquierdo -->
@@ -50,12 +58,12 @@
             <span>Visor 3D</span>
         </a>
 
-        <a href="#" class="sidebar-item active">
+        <a href="pid.html" class="sidebar-item">
             <i class='bx bx-desktop'></i>
             <span>P&ID</span>
         </a>
 
-        <a href="dual.html" class="sidebar-item">
+        <a href="dual.html" class="sidebar-item active">
             <i class='bx bx-desktop'></i>
             <span>Dual</span>
         </a>
