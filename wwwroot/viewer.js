@@ -54,7 +54,15 @@ async function createViewer(container, viewerId) {
     return new Promise((resolve, reject) => {
         try {
             const config = {
-                extensions: ['Autodesk.DocumentBrowser']
+                 extensions: ['Autodesk.DocumentBrowser'],
+                useADP: false,
+                env: 'AutodeskProduction',
+                api: 'derivativeV2',
+                // Mejoras de calidad
+                disabledExtensions: {
+                    bimwalk: true,
+                    hypermodeling: true
+                }
             };
             
             const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
@@ -258,6 +266,29 @@ async function initializeDualViewer() {
         // Guardar referencias globales
         window.viewer3D = viewer3D;
         window.viewer2D = viewer2D;
+
+         if (window.setViewerReferences) {
+            window.setViewerReferences(viewer3D, viewer2D);
+        }
+        
+        // Mejorar la calidad de ambos viewers
+        if (window.improveViewerQuality) {
+            window.improveViewerQuality(viewer3D);
+            window.improveViewerQuality(viewer2D);
+        }
+
+        // Listener para cuando los viewers estén completamente cargados
+        viewer3D.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function() {
+            if (window.improveViewerQuality) {
+                window.improveViewerQuality(viewer3D);
+            }
+        });
+
+        viewer2D.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function() {
+            if (window.improveViewerQuality) {
+                window.improveViewerQuality(viewer2D);
+            }
+        });
         
     } catch (error) {
         console.error('Error inicializando visor dual:', error);
