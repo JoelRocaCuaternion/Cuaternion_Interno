@@ -67,6 +67,7 @@ async function createViewer(container, viewerId) {
             
             const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
             const startedCode = viewer.start();
+            initializeViewerResize();
             
             if (startedCode > 0) {
                 console.error('Error iniciando viewer:', startedCode);
@@ -89,7 +90,7 @@ async function createViewer(container, viewerId) {
     });
 }
 
-// Función para inicializar un viewer (interfaz compatible con el código anterior)
+// Función para inicializar un viewer
 async function initViewer(container) {
     const viewerId = container.id || 'default';
     return await createViewer(container, viewerId);

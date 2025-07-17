@@ -5,21 +5,29 @@ body {
     width: 100%;
     background: #f0f0f0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
+    overflow: hidden; /* AÑADIDO: Prevenir scroll innecesario */
 }
 
 .viewer {
     position: fixed;
     top: 0;
+    left: 220px;
+    width: calc(100vw - 220px);
+    height: 100vh;
+    transition: all 0.3s ease;
+    overflow: hidden; /* AÑADIDO: Prevenir desbordamiento */
+}
+
+.viewer.sidebar-hidden {
     left: 0;
     width: 100vw;
-    height: 100vh;
-    z-index: 1;
 }
 
 #preview, #preview2D {
     width: 100%;
     height: 100%;
+    transition: inherit;
+    overflow: hidden; /* AÑADIDO: Prevenir desbordamiento */
 }
 
 /* Asegurar que el viewer de Forge ocupe todo el espacio */
@@ -29,24 +37,39 @@ body {
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
+    transition: inherit !important;
+    overflow: hidden !important; /* AÑADIDO: Prevenir desbordamiento */
+}
+
+/* AÑADIDO: Forzar que el canvas ocupe todo el espacio */
+.adsk-viewing-viewer canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+/* AÑADIDO: Asegurar que el contenedor del canvas no tenga espacios */
+.adsk-viewing-viewer .adsk-viewing-canvas-container {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
 /* Menú lateral izquierdo */
 .sidebar {
     position: fixed;
-    left: 0;
     top: 0;
+    left: 0;
     width: 220px;
     height: 100vh;
     background: #ffffff;
-    z-index: 1000;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    padding: 20px 0;
+    z-index: 10;
     transition: transform 0.3s ease;
 }
 
 .sidebar.collapsed {
-    transform: translateX(-100%);
+    transform: translateX(-220px);
 }
 
 .sidebar-item {
@@ -130,7 +153,7 @@ body {
 .collapsible-panel {
     position: fixed;
     top: 0;
-    left: 180px;
+    left: 220px;
     right: 0;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -139,11 +162,9 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transform: translateY(-100%);
 }
-
 .collapsible-panel.show {
     transform: translateY(0);
 }
-
 .collapsible-panel.sidebar-hidden {
     left: 0;
 }
@@ -152,7 +173,7 @@ body {
 .collapsible-panel-a {
     position: fixed;
     top: 0;
-    left: 180px;
+    left: 220px;
     right: 0;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -161,11 +182,9 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transform: translateY(-100%);
 }
-
 .collapsible-panel-a.show {
     transform: translateY(0);
 }
-
 .collapsible-panel-a.sidebar-hidden {
     left: 0;
 }
@@ -173,19 +192,11 @@ body {
 .panel-content {
     padding: 20px;
 }
-
 .panel-header {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-}
-
-.panel-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1976d2;
-    margin-right: 20px;
 }
 
 .toggle-button {
@@ -201,11 +212,9 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .toggle-button:hover {
     background: #f8f9fa;
 }
-
 .toggle-button i {
     font-size: 16px;
     color: #666;
@@ -222,16 +231,13 @@ body {
     z-index: 998;
     transition: all 0.3s ease;
 }
-
 .floating-tabs.sidebar-hidden {
     left: 20px;
     transform: none;
 }
-
 .floating-tabs.hidden {
     display: none;
 }
-
 .floating-tab {
     background: #fff;
     border: none;
@@ -243,7 +249,6 @@ body {
     font-weight: bold;
     color: #1976d2;
 }
-
 .floating-tab:hover {
     background: #f8f9fa;
     transform: translateY(-2px);
@@ -530,23 +535,34 @@ body {
 }
 
 /*DUAL*/
+/*DUAL*/
+
+/*DUAL - Configuración Vertical*/
 
 .dual-viewer-container {
     display: flex;
+    flex-direction: column; /* Cambiado de row a column para layout vertical */
     height: 100vh;
     width: 100%;
-    position: relative; /* Añadido para controlar el posicionamiento */
+    position: relative;
 }
 
 .viewer-half {
     flex: 1;
     position: relative;
     border: 1px solid #ddd;
-    overflow: hidden; /* Añadido para contener el contenido */
+    overflow: hidden;
+    width: 100%; /* Ocupar todo el ancho disponible */
+    height: 50%; /* Cada mitad ocupa el 50% de la altura */
 }
 
 .viewer-half:first-child {
-    border-right: 2px solid #007bff;
+    border-bottom: 2px solid #007bff; /* Línea divisoria entre los visores */
+    border-right: none; /* Remover borde derecho */
+}
+
+.viewer-half:last-child {
+    border-top: none; /* Evitar línea doble en el medio */
 }
 
 .viewer-label {
@@ -572,7 +588,7 @@ body {
 #preview, #preview2D {
     width: 100%;
     height: 100%;
-    position: relative; /* Asegurar posicionamiento relativo */
+    position: relative;
 }
 
 /* Sobrescribir estilos de Forge para el contexto dual */
@@ -588,6 +604,33 @@ body {
 .dual-viewer-container canvas {
     width: 100% !important;
     height: 100% !important;
+}
+
+/* Funcionalidad de pantalla completa para el visor 3D */
+.dual-viewer-container.fullscreen-3d .viewer-half:first-child {
+    flex: 1;
+    height: 100%;
+}
+
+.dual-viewer-container.fullscreen-3d .viewer-half:last-child {
+    display: none;
+}
+
+/* Responsive: En pantallas pequeñas, mantener vertical */
+@media (max-width: 768px) {
+    .dual-viewer-container {
+        flex-direction: column; /* Mantener vertical en móviles */
+    }
+    
+    .viewer-half {
+        width: 100%;
+        height: 50%;
+    }
+    
+    .viewer-half:first-child {
+        border-right: none;
+        border-bottom: 2px solid #007bff;
+    }
 }
 
 /*Sub-Item Ocultar DUAL*/
@@ -626,16 +669,6 @@ body {
     cursor: pointer;
 }
 
-.dual-viewer-container.fullscreen-3d .viewer-half:first-child {
-    flex: 1;
-    width: 100%;
-}
-
-.dual-viewer-container.fullscreen-3d .viewer-half:last-child {
-    display: none;
-}
-
-
 /*SELECT 2*/
 
 .select-container {
@@ -655,80 +688,79 @@ body {
 }
 
 /* Estilos para el contenedor principal de Select2 */
-    .select2-container {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-        font-size: 20px !important;
-    }
+.select2-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 20px !important;
+}
 
-    /* Estilos para el campo de selección */
-    .select2-container--default .select2-selection--single {
-        background-color: white !important;
-        border: 2px solid #ddd !important;
-        border-radius: 6px !important;
-        height: 40px !important;
-        line-height: 46px !important;
-        font-size: 20px !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    }
+/* Estilos para el campo de selección */
+.select2-container--default .select2-selection--single {
+    background-color: white !important;
+    border: 2px solid #ddd !important;
+    border-radius: 6px !important;
+    height: 40px !important;
+    line-height: 46px !important;
+    font-size: 20px !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
 
-    /* Texto dentro del campo de selección */
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #333 !important;
-        padding-left: 15px !important;
-        font-size: 16px !important;
-        line-height: 36px !important;
-    }
+/* Texto dentro del campo de selección */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #333 !important;
+    padding-left: 15px !important;
+    font-size: 16px !important;
+    line-height: 36px !important;
+}
 
-    /* Cuando el campo está enfocado */
-    .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #007cba !important;
-        box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2) !important;
-    }
+/* Cuando el campo está enfocado */
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #007cba !important;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2) !important;
+}
 
-    /* Dropdown container */
-    .select2-dropdown {
-        background-color: white !important;
-        border: 2px solid #ddd !important;
-        border-radius: 6px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    }
+/* Dropdown container */
+.select2-dropdown {
+    background-color: white !important;
+    border: 2px solid #ddd !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
 
-    /* Campo de búsqueda dentro del dropdown */
-    .select2-search--dropdown .select2-search__field {
-        border: 1px solid #ddd !important;
-        border-radius: 4px !important;
-        padding: 8px 12px !important;
-        font-size: 14px !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    }
+/* Campo de búsqueda dentro del dropdown */
+.select2-search--dropdown .select2-search__field {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
 
-    /* Opciones del dropdown */
-    .select2-results__option {
-        padding: 12px 15px !important;
-        font-size: 14px !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-        background-color: white !important;
-        color: #333 !important;
-        border-bottom: 1px solid #f0f0f0 !important;
-    }
+/* Opciones del dropdown */
+.select2-results__option {
+    padding: 12px 15px !important;
+    font-size: 14px !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    background-color: white !important;
+    color: #333 !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
 
-    /* Hover sobre las opciones */
-    .select2-results__option--highlighted {
-        background-color: #e8f4fc !important;
-        color: #333 !important;
-    }
+/* Hover sobre las opciones */
+.select2-results__option--highlighted {
+    background-color: #e8f4fc !important;
+    color: #333 !important;
+}
 
-    /* Opción seleccionada */
-    .select2-results__option[aria-selected="true"] {
-        background-color: #f5f5f5 !important;
-        color: #333 !important;
-    }
+/* Opción seleccionada */
+.select2-results__option[aria-selected="true"] {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+}
 
-    /* Cuando se hace hover sobre la opción seleccionada */
-    .select2-results__option[aria-selected="true"]:hover,
-    .select2-results__option[aria-selected="true"].select2-results__option--highlighted {
-        background-color: #e8f4fc !important;
-        color: #333 !important;
-    }
-
+/* Cuando se hace hover sobre la opción seleccionada */
+.select2-results__option[aria-selected="true"]:hover,
+.select2-results__option[aria-selected="true"].select2-results__option--highlighted {
+    background-color: #e8f4fc !important;
+    color: #333 !important;
+}

@@ -27,6 +27,10 @@ let sidebarVisible = true;
 let panelPVisible = false;
 let panelAVisible = false;
 
+// Timeouts para el auto-hide
+let panelPHideTimeout;
+let panelAHideTimeout;
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -34,23 +38,96 @@ function toggleSidebar() {
     const panelP = document.getElementById('collapsiblePanelP');
     const panelA = document.getElementById('collapsiblePanelA');
     const floatingTabs = document.getElementById('floatingTabs');
-    
+    const viewer = document.getElementById('viewerContainer');
+   
     sidebarVisible = !sidebarVisible;
-    
+   
     if (sidebarVisible) {
         sidebar.classList.remove('collapsed');
         sidebarToggle.classList.add('sidebar-visible');
         sidebarToggleIcon.className = 'bx bx-chevron-left';
-        panelP.classList.remove('sidebar-hidden');
-        panelA.classList.remove('sidebar-hidden');
-        floatingTabs.classList.remove('sidebar-hidden');
+        viewer.classList.remove('sidebar-hidden');
+       
+        if (panelP) panelP.classList.remove('sidebar-hidden');
+        if (panelA) panelA.classList.remove('sidebar-hidden');
+        if (floatingTabs) floatingTabs.classList.remove('sidebar-hidden');
     } else {
         sidebar.classList.add('collapsed');
         sidebarToggle.classList.remove('sidebar-visible');
         sidebarToggleIcon.className = 'bx bx-chevron-right';
-        panelP.classList.add('sidebar-hidden');
-        panelA.classList.add('sidebar-hidden');
-        floatingTabs.classList.add('sidebar-hidden');
+        viewer.classList.add('sidebar-hidden');
+       
+        if (panelP) panelP.classList.add('sidebar-hidden');
+        if (panelA) panelA.classList.add('sidebar-hidden');
+        if (floatingTabs) floatingTabs.classList.add('sidebar-hidden');
+    }
+   
+    // SOLUCIÓN MEJORADA: Redimensionar el visor de Forge
+    if (window.viewer) {
+        // Forzar un reflow antes del resize
+        viewer.offsetHeight; // Trigger reflow
+       
+        // Esperar a que termine la transición CSS
+        setTimeout(() => {
+            try {
+                // Método 1: Resize estándar
+                window.viewer.resize();
+               
+                // Método 2: Forzar actualización del canvas (más agresivo)
+                const canvas = viewer.querySelector('canvas');
+                if (canvas) {
+                    const rect = viewer.getBoundingClientRect();
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                }
+               
+                // Método 3: Trigger manual de resize en el container
+                const container = viewer.querySelector('#preview');
+                if (container) {
+                    const resizeEvent = new Event('resize');
+                    window.dispatchEvent(resizeEvent);
+                }
+               
+                // Método 4: Invalidar y refrescar el visor
+                if (window.viewer.impl) {
+                    window.viewer.impl.invalidate(true);
+                }
+               
+            } catch (error) {
+                console.warn('Error al redimensionar el visor:', error);
+            }
+        }, 350); // Tiempo ligeramente mayor para asegurar que termine la transición
+    }
+}
+
+// NUEVA FUNCIÓN: Listener para cambios de tamaño de ventana
+function handleWindowResize() {
+    if (window.viewer) {
+        // Debounce para evitar múltiples llamadas
+        clearTimeout(window.resizeTimeout);
+        window.resizeTimeout = setTimeout(() => {
+            window.viewer.resize();
+        }, 100);
+    }
+}
+
+// NUEVA FUNCIÓN: Observador de cambios en el contenedor
+function setupViewerObserver() {
+    const viewerContainer = document.getElementById('viewerContainer');
+    
+    if (viewerContainer && window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (window.viewer) {
+                    // Pequeño delay para evitar conflictos con transiciones
+                    setTimeout(() => {
+                        window.viewer.resize();
+                    }, 50);
+                }
+            }
+        });
+        
+        resizeObserver.observe(viewerContainer);
     }
 }
 
@@ -94,6 +171,46 @@ function togglePanelA() {
     }
 }
 
+function togglePanelP() {
+    const panelP = document.getElementById('collapsiblePanelP');
+    const iconP = document.getElementById('toggleIconP');
+    const floatingTabs = document.getElementById('floatingTabs');
+   
+    panelPVisible = !panelPVisible;
+   
+    if (panelPVisible) {
+        panelP.classList.add('show');
+        iconP.className = 'bx bx-chevron-up';
+        floatingTabs.classList.add('hidden');
+    } else {
+        panelP.classList.remove('show');
+        iconP.className = 'bx bx-chevron-down';
+        if (!panelAVisible) {
+            floatingTabs.classList.remove('hidden');
+        }
+    }
+}
+
+function togglePanelA() {
+    const panelA = document.getElementById('collapsiblePanelA');
+    const iconA = document.getElementById('toggleIconA');
+    const floatingTabs = document.getElementById('floatingTabs');
+   
+    panelAVisible = !panelAVisible;
+   
+    if (panelAVisible) {
+        panelA.classList.add('show');
+        iconA.className = 'bx bx-chevron-up';
+        floatingTabs.classList.add('hidden');
+    } else {
+        panelA.classList.remove('show');
+        iconA.className = 'bx bx-chevron-down';
+        if (!panelPVisible) {
+            floatingTabs.classList.remove('hidden');
+        }
+    }
+}
+
 function showPanelP() {
     // Cerrar panel A si está abierto
     if (panelAVisible) {
@@ -116,6 +233,47 @@ function showPanelA() {
     }
 }
 
+// Funciones para auto-hide
+function hidePanelP() {
+    if (panelPVisible) {
+        togglePanelP();
+    }
+}
+
+function hidePanelA() {
+    if (panelAVisible) {
+        togglePanelA();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const panelP = document.getElementById('collapsiblePanelP');
+    const panelA = document.getElementById('collapsiblePanelA');
+    
+    if (panelP) {
+        // Eventos para Panel P
+        panelP.addEventListener('mouseenter', function() {
+            clearTimeout(panelPHideTimeout);
+        });
+        
+        panelP.addEventListener('mouseleave', function() {
+            panelPHideTimeout = setTimeout(hidePanelP, 100); // 500ms delay
+        });
+    }
+    
+    if (panelA) {
+        // Eventos para Panel A
+        panelA.addEventListener('mouseenter', function() {
+            clearTimeout(panelAHideTimeout);
+        });
+        
+        panelA.addEventListener('mouseleave', function() {
+            panelAHideTimeout = setTimeout(hidePanelA, 100); // 500ms delay
+        });
+    }
+});
+
+
 // Funcionalidad del menú lateral
 document.querySelectorAll('.sidebar-item').forEach(item => {
     item.addEventListener('click', function(e) {
@@ -123,16 +281,39 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
         if (href === '#') {
             e.preventDefault();
         }
-
         document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
         this.classList.add('active');
     });
 });
 
 // Cerrar overlay
-document.getElementById('closeOverlay').addEventListener('click', function() {
-    document.getElementById('overlay').style.display = 'none';
+const closeOverlay = document.getElementById('closeOverlay');
+if (closeOverlay) {
+    closeOverlay.addEventListener('click', function() {
+        document.getElementById('overlay').style.display = 'none';
+    });
+}
+
+// NUEVOS EVENT LISTENERS
+window.addEventListener('resize', handleWindowResize);
+
+// Inicializar observador cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    setupViewerObserver();
 });
+
+// FUNCIÓN ADICIONAL: Para llamar después de cargar el visor
+function initializeViewerResize() {
+    if (window.viewer) {
+        // Asegurar que el visor esté correctamente dimensionado al inicio
+        setTimeout(() => {
+            window.viewer.resize();
+        }, 100);
+        
+        // Configurar el observador si no se ha hecho ya
+        setupViewerObserver();
+    }
+}
 
 
 // SubMenú DUAL - Código corregido
